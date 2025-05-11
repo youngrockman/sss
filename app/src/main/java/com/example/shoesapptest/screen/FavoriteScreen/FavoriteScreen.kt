@@ -1,27 +1,9 @@
 package com.example.shoesapptest.screen.FavoriteScreen
 
 import ProductItem
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,6 +17,7 @@ import com.example.shoesapptest.data.remote.network.NetworkResponseSneakers
 import com.example.shoesapptest.data.remote.network.SneakersResponse
 import com.example.shoesapptest.screen.ForSneakers.SneakersViewModel
 import com.example.shoesapptest.screen.HomeScreen.component.BottomBar
+import com.google.accompanist.flowlayout.FlowRow
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,9 +27,6 @@ fun FavoriteScreen(
     viewModel: SneakersViewModel = koinViewModel()
 ) {
     val favoritesState by viewModel.favoritesState.collectAsState()
-
-    LaunchedEffect(key1 = Unit) {
-    }
 
     Scaffold(
         topBar = {
@@ -62,13 +42,13 @@ fun FavoriteScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() },
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(20.dp)
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.back_arrow),
                             contentDescription = "Назад",
-                            tint = Color.Black,
-                            modifier = Modifier.size(24.dp)
+                            tint = Color.Gray,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 },
@@ -91,28 +71,38 @@ fun FavoriteScreen(
         },
         bottomBar = { BottomBar(navController) }
     ) { paddingValues ->
-        when (favoritesState) {
-            is NetworkResponseSneakers.Success -> {
-                val favorites = (favoritesState as NetworkResponseSneakers.Success<List<SneakersResponse>>).data
-                FavoriteContent(
-                    modifier = Modifier.padding(paddingValues),
-                    favorites = favorites,
-                    onItemClick = { id ->
-                    },
-                    onFavoriteClick = {},
-                    navController = navController
-                )
-            }
-            is NetworkResponseSneakers.Error -> {
-                Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when (favoritesState) {
+                is NetworkResponseSneakers.Success -> {
+                    val favorites = (favoritesState as NetworkResponseSneakers.Success<List<SneakersResponse>>).data
+
+                    if (favorites.isEmpty()) {
+                        Text(
+                            text = "Нет избранных товаров",
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    } else {
+                        FavoriteList(
+                            favorites = favorites,
+                            onItemClick = { id ->  },
+                            onFavoriteClick = { },
+                            navController = navController
+                        )
+                    }
+                }
+
+                is NetworkResponseSneakers.Error -> {
                     Text(
                         text = "Ошибка загрузки",
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-            }
-            NetworkResponseSneakers.Loading -> {
-                Box(modifier = Modifier.fillMaxSize()) {
+
+                NetworkResponseSneakers.Loading -> {
                     Text(
                         text = "Загрузка...",
                         modifier = Modifier.align(Alignment.Center)
@@ -124,33 +114,32 @@ fun FavoriteScreen(
 }
 
 @Composable
-fun FavoriteContent(
-    modifier: Modifier = Modifier,
+fun FavoriteList(
     favorites: List<SneakersResponse>,
     onItemClick: (Int) -> Unit,
     onFavoriteClick: () -> Unit,
     navController: NavController
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        items(
-            items = favorites,
-            key = { it.id }
-        ) { sneaker ->
-            ProductItem(
-                sneaker = sneaker,
-                onItemClick = { onItemClick(sneaker.id) },
-                onFavoriteClick = { },
-                onAddToCart = {  },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(0.85f)
-            )
+        FlowRow(
+            mainAxisSpacing = 16.dp,
+            crossAxisSpacing = 16.dp
+        ) {
+            favorites.forEach { sneaker ->
+                ProductItem(
+                    sneaker = sneaker,
+                    onItemClick = { onItemClick(sneaker.id) },
+                    onFavoriteClick = { onFavoriteClick() },
+                    onAddToCart = { },
+                    modifier = Modifier
+                        .width(160.dp)
+                        .aspectRatio(0.85f)
+                )
+            }
         }
     }
 }

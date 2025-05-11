@@ -8,10 +8,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,85 +21,114 @@ import com.example.shoesapptest.R
 import com.example.shoesapptest.data.remote.network.NetworkResponseSneakers
 import com.example.shoesapptest.data.remote.network.SneakersResponse
 import com.example.shoesapptest.screen.ForSneakers.SneakersViewModel
-
 import org.koin.compose.viewmodel.koinViewModel
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PopularScreen(navController: NavController, viewModel: SneakersViewModel = koinViewModel()) {
-
+fun PopularScreen(
+    navController: NavController,
+    viewModel: SneakersViewModel = koinViewModel()
+) {
     val sneakersState by viewModel.sneakersState.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.fetchSneakers()
     }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Популярное",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = { navController.popBackStack() },
-                        modifier = Modifier
-                            .size(24.dp)
-                            .background(Color.White, shape = CircleShape)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.back_arrow),
-                            contentDescription = "Назад",
-                            tint = Color.Black,
-                            modifier = Modifier.padding(6.dp),
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        TopBar(
+            onBack = { navController.popBackStack() },
+            onFavoriteClick = { navController.navigate("favorite") }
+        )
 
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = { navController.navigate("favorite") },
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(Color.White, shape = CircleShape)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.heart),
-                            contentDescription = "Избранное",
-                            tint = Color.Black,
-                            modifier = Modifier.padding(6.dp)
-                        )
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = "Популярное",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         when (sneakersState) {
             is NetworkResponseSneakers.Success -> {
+                val sneakers = (sneakersState as NetworkResponseSneakers.Success).data
                 PopularContent(
-                    sneakers = (sneakersState as NetworkResponseSneakers.Success).data,
+                    sneakers = sneakers,
                     onFavoriteClick = {},
                     onAddToCart = { },
                     navController = navController,
-                    modifier = Modifier.padding(paddingValues)
+                    modifier = Modifier.weight(1f)
                 )
             }
+
             is NetworkResponseSneakers.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator()
                 }
             }
+
             is NetworkResponseSneakers.Error -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Ошибка загрузки")
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Ошибка загрузки", color = Color.Red)
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun TopBar(
+    onBack: () -> Unit,
+    onFavoriteClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(
+            onClick = onBack,
+            modifier = Modifier
+                .size(36.dp)
+                .background(Color.White, shape = CircleShape)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.back_arrow),
+                contentDescription = "Назад",
+                tint = Color.Black,
+                modifier = Modifier.padding(6.dp)
+            )
+        }
+
+        IconButton(
+            onClick = onFavoriteClick,
+            modifier = Modifier
+                .size(36.dp)
+                .background(Color.White, shape = CircleShape)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.heart),
+                contentDescription = "Избранное",
+                tint = Color.Black,
+                modifier = Modifier.padding(6.dp)
+            )
         }
     }
 }
@@ -118,14 +144,14 @@ fun PopularContent(
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        contentPadding = PaddingValues(8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(sneakers) { sneaker ->
+        items(sneakers, key = { it.id }) { sneaker ->
             ProductItem(
                 sneaker = sneaker,
-                onItemClick = {  },
+                onItemClick = { navController.navigate("details/${sneaker.id}") },
                 onFavoriteClick = onFavoriteClick,
                 onAddToCart = { onAddToCart(sneaker) },
                 modifier = Modifier

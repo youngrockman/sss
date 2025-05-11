@@ -1,37 +1,14 @@
 package com.example.shoesapptest.screen.ListingScreen
 
 import ProductItem
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,9 +28,11 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun OutdoorScreen(
     navController: NavController,
-    categories: List<String> = listOf("Всё", "Outdoor", "Tennis", "Basketball", "Running")
+    viewModel: SneakersViewModel = koinViewModel(),
+    initialCategory: String = "Outdoor"
 ) {
-    var selectedCategory by remember { mutableStateOf("Outdoor") }
+    var selectedCategory by remember { mutableStateOf(initialCategory) }
+    val categories = listOf("Всё", "Outdoor", "Tennis", "Basketball", "Running")
 
     Scaffold(
         topBar = {
@@ -61,102 +40,92 @@ fun OutdoorScreen(
                 title = {
                     Text(
                         text = selectedCategory,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
-                    IconButton(
-                        onClick = { navController.popBackStack() },
-                        modifier = Modifier.size(20.dp)
-                    ) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             painter = painterResource(R.drawable.back_arrow),
                             contentDescription = "Назад",
-                            modifier = Modifier.size(24.dp)
+                            tint = Color.Black
                         )
                     }
-                },
+                }
             )
         },
         bottomBar = { BottomBar(navController) }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier.padding(paddingValues)
+    ) { padding ->
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(padding)
         ) {
-            CategoryTabs(
+            CategorySelector(
                 categories = categories,
-                selectedCategory = selectedCategory,
-                onCategorySelected = { category ->
-                    selectedCategory = category
-
+                selected = selectedCategory,
+                onSelect = {
+                    selectedCategory = it
+                    viewModel.fetchSneakersByCategory(it)
                 }
             )
 
-            OutdoorContent(
+            SneakersGrid(
                 navController = navController,
-                category = selectedCategory
+                viewModel = viewModel
             )
         }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchSneakersByCategory(initialCategory)
     }
 }
 
 @Composable
-fun CategoryTabs(
+fun CategorySelector(
     categories: List<String>,
-    selectedCategory: String,
-    onCategorySelected: (String) -> Unit
+    selected: String,
+    onSelect: (String) -> Unit
 ) {
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(vertical = 12.dp, horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(categories) { category ->
-            Box(
-                modifier = Modifier
-                    .clickable { onCategorySelected(category) }
-                    .background(
-                        color = if (category == selectedCategory) MatuleTheme.colors.accent
-                        else Color.White,
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+        items(categories.size) { index ->
+            val category = categories[index]
+            Button(
+                onClick = { onSelect(category) },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (category == selected) MatuleTheme.colors.accent else Color.LightGray,
+                    contentColor = if (category == selected) Color.White else Color.Black
+                ),
+                shape = RoundedCornerShape(20.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Text(
-                    text = category,
-                    color = if (category == selectedCategory) Color.White else Color.Black,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                Text(text = category, fontSize = 14.sp)
             }
         }
     }
 }
 
 @Composable
-fun OutdoorContent(
+fun SneakersGrid(
     navController: NavController,
-    category: String,
-    viewModel: SneakersViewModel = koinViewModel()
+    viewModel: SneakersViewModel
 ) {
     val sneakersState by viewModel.sneakersState.collectAsState()
     val favoritesState by viewModel.favoritesState.collectAsState()
 
-    LaunchedEffect(category) {
-        viewModel.fetchSneakersByCategory(category)
-    }
-
     when (val state = sneakersState) {
         is NetworkResponseSneakers.Success -> {
-            val sneakersWithFavorites = state.data.map { sneaker ->
+            val sneakers = state.data.map { sneaker ->
                 sneaker.copy(
                     isFavorite = (favoritesState as? NetworkResponseSneakers.Success)?.data?.any { it.id == sneaker.id } == true
                 )
             }
-
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -165,27 +134,26 @@ fun OutdoorContent(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(sneakersWithFavorites, key = { it.id }) { sneaker ->
+                items(sneakers, key = { it.id }) { sneaker ->
                     ProductItem(
                         sneaker = sneaker,
                         onItemClick = { navController.navigate("details/${sneaker.id}") },
-                        onFavoriteClick = {},
-                        onAddToCart = {
-
-                        },
+                        onFavoriteClick = { /* TODO */ },
+                        onAddToCart = { /* TODO */ },
                         modifier = Modifier.aspectRatio(0.85f)
                     )
                 }
             }
         }
+
         is NetworkResponseSneakers.Error -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Ошибка: ${state.errorMessage}")
+                Text("Ошибка загрузки: ${state.errorMessage}", color = Color.Red)
             }
         }
 
         NetworkResponseSneakers.Loading -> {
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         }
