@@ -122,7 +122,7 @@ fun EmailSentDialog(
     LaunchedEffect(Unit) {
         delay(5000L)
         onDismiss()
-        navController.navigate(Screen.Verification.route)
+        navController.navigate(Screen.OTPVerification.route)
     }
 
     AlertDialog(

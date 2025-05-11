@@ -51,14 +51,6 @@ class AuthUseCase(private val dataStore: DataStore, private val authRepository: 
         }
     }
 
-    suspend fun getSneakers(): NetworkResponseSneakers<List<SneakersResponse>> {
-        return try {
-            val result = authRepository.getSneakers()
-            result
-        } catch (e: Exception) {
-            NetworkResponseSneakers.Error(e.message ?: "Unknown Error")
-        }
-    }
 
     suspend fun getSneakersByCategory(category: String): NetworkResponseSneakers<List<SneakersResponse>> {
         return authRepository.getSneakersByCategory(category)

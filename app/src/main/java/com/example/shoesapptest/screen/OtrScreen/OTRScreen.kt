@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -118,12 +119,13 @@ fun VerificationScreen(
                 repeat(5) { index ->
                     Box(
                         modifier = Modifier
-                            .size(48.dp)
+                            .width(56.dp)
+                            .height(64.dp)
                             .background(
                                 color = MatuleTheme.colors.background,
-                                shape = RoundedCornerShape(8.dp)
+                                shape = RoundedCornerShape(10.dp)
                             )
-                            .padding(8.dp),
+                            .padding(4.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         BasicTextField(
@@ -133,7 +135,7 @@ fun VerificationScreen(
                             },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             textStyle = TextStyle(
-                                fontSize = 24.sp,
+                                fontSize = 28.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MatuleTheme.colors.text,
                                 textAlign = TextAlign.Center
@@ -147,6 +149,7 @@ fun VerificationScreen(
                     }
                 }
             }
+
 
 
             Spacer(modifier = Modifier.height(32.dp))

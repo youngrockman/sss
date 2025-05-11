@@ -18,9 +18,9 @@ class AuthRepository(val authRemoteSource: AuthRemoteSource) {
         return authRemoteSource.authorization(authorizationRequest)
     }
 
-    suspend fun getSneakers(): NetworkResponseSneakers<List<SneakersResponse>> {
+    suspend fun getSneakersByCategory(category: String): NetworkResponseSneakers<List<SneakersResponse>> {
         return try {
-            val result = authRemoteSource.popular()
+            val result = authRemoteSource.getSneakersByCategory(category)
             NetworkResponseSneakers.Success(result)
         } catch (e: Exception) {
             NetworkResponseSneakers.Error(e.message ?: "Unknown Error")
@@ -30,15 +30,6 @@ class AuthRepository(val authRemoteSource: AuthRemoteSource) {
     suspend fun getPopularSneakers(): NetworkResponseSneakers<List<SneakersResponse>> {
         return try {
             val result = authRemoteSource.getPopularSneakers()
-            NetworkResponseSneakers.Success(result)
-        } catch (e: Exception) {
-            NetworkResponseSneakers.Error(e.message ?: "Unknown Error")
-        }
-    }
-
-    suspend fun getSneakersByCategory(category: String): NetworkResponseSneakers<List<SneakersResponse>> {
-        return try {
-            val result = authRemoteSource.getSneakersByCategory(category)
             NetworkResponseSneakers.Success(result)
         } catch (e: Exception) {
             NetworkResponseSneakers.Error(e.message ?: "Unknown Error")

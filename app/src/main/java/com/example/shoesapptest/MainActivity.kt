@@ -13,7 +13,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.pypypy.ui.screen.home.HomeScreenHast
 import com.example.shoesapp.ui.screen.SignInScreen
 import com.example.shoesapp.ui.theme.MatuleTheme
-import com.example.shoesapptest.data.local.DataStoreForSlides
 import com.example.shoesapptest.screen.FavoriteScreen.FavoriteScreen
 import com.example.shoesapptest.screen.ForgotScreen.ForgotPassScreen
 import com.example.shoesapptest.screen.ListingScreen.OutdoorScreen
@@ -25,16 +24,16 @@ import com.example.shoesapptest.screen.SlideScreen.TitleScreen
 
 
 sealed class Screen(val route: String) {
-    object TitleScreen : Screen("first")
-    object SlideScreen : Screen("slide")
-    object SignIn : Screen("signin")
-    object ForgotPass : Screen("forgotpass")
-    object Registration : Screen("registration")
+    object TitleScreen : Screen("title")
+    object SlideScreen : Screen("onboarding")
+    object SignInScreen : Screen("login")
+    object ForgotPasswordScereem : Screen("forgot_password")
+    object RegisteratonScreen : Screen("register")
     object Home : Screen("home")
     object Popular : Screen("popular")
     object Favorite : Screen("favorite")
     object Outdoor : Screen("listing")
-    object Verification : Screen("verification")
+    object OTPVerification : Screen("otp_verification")
 }
 
 
@@ -49,7 +48,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             MatuleTheme {
                 val navController = rememberNavController()
-                val dataStore = DataStoreForSlides(LocalContext.current)
 
 
 
@@ -69,22 +67,21 @@ class MainActivity : ComponentActivity() {
                     composable(Screen.SlideScreen.route) {
                         SlideScreen(
                             onNavigateToAuthScreen = {
-                                navController.navigate(Screen.SignIn.route) {
+                                navController.navigate(Screen.SignInScreen.route) {
                                     popUpTo(Screen.SlideScreen.route) { inclusive = true }
                                 }
-                            },
-                            dataStore = dataStore
+                            }
                         )
                     }
 
-                    composable(Screen.SignIn.route) {
+                    composable(Screen.SignInScreen.route) {
                         SignInScreen(
                             onNavigationToRegScreen = {
-                                navController.navigate(Screen.Registration.route)
+                                navController.navigate(Screen.RegisteratonScreen.route)
                             },
                             onSignInSuccess = {
                                 navController.navigate(Screen.Home.route) {
-                                    popUpTo(Screen.SignIn.route) { inclusive = true }
+                                    popUpTo(Screen.SignInScreen.route) { inclusive = true }
                                 }
                             },
                             navController = navController
@@ -93,18 +90,18 @@ class MainActivity : ComponentActivity() {
 
 
 
-                    composable(Screen.ForgotPass.route) {
+                    composable(Screen.ForgotPasswordScereem.route) {
                         ForgotPassScreen(
                             onNavigateToSignInScreen = { navController.popBackStack() },
                             navController = navController
                         )
                     }
 
-                    composable(Screen.Verification.route) {
+                    composable(Screen.OTPVerification.route) {
                         VerificationScreen(navController = navController)
                     }
 
-                    composable(Screen.Registration.route) {
+                    composable(Screen.RegisteratonScreen.route) {
                         RegisterAccountScreen(
                             onNavigationToSigninScreen = {
                                 navController.popBackStack()

@@ -69,12 +69,11 @@ fun OutdoorScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() },
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(20.dp)
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.back_arrow),
                             contentDescription = "Назад",
-                            tint = Color.Black,
                             modifier = Modifier.size(24.dp)
                         )
                     }

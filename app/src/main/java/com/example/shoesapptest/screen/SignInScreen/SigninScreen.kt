@@ -163,7 +163,7 @@ fun SignInContent(
             onClick = {
                 viewModel.signIn(onSuccess = {
                     navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.SignIn.route) { inclusive = true }
+                        popUpTo(Screen.SignInScreen.route) { inclusive = true }
                     }
                 })
             },

@@ -2,220 +2,178 @@ package com.example.shoesapptest.screen.SlideScreen
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shoesapptest.R
-import com.example.shoesapptest.data.local.DataStoreForSlides
-import com.example.shoesapptest.data.local.OnboardingPage
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
-fun TitleScreen(OnnavifateToSlideScreen: () -> Unit) {
+fun TitleScreen(onNavigateToSliderScreen: () -> Unit) {
     LaunchedEffect(Unit) {
-        delay(3000)
-        OnnavifateToSlideScreen()
+        kotlinx.coroutines.delay(3000)
+        onNavigateToSliderScreen()
     }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.horizontalGradient(listOf(Color(0xFF48B2E7), Color(0xFF0076B1))))
-    ) {
-        Text(
-            text = "Matule",
-            fontSize = 32.sp,
-            color = Color.White,
-            modifier = Modifier.align(Alignment.Center)
-        )
-    }
+            .background(Brush.horizontalGradient(listOf(Color(0xFF48B2E7), Color(0xFF0076B1)))))
+            {
+                Text(
+                    text = "MATULE",
+                    fontSize = 32.sp,
+                    color = Color.White,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
 }
 
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun SlideScreen(
-    onNavigateToAuthScreen: () -> Unit,
-    dataStore: DataStoreForSlides
-) {
-    val pagerState = rememberPagerState(pageCount = { 3 })
-    val coroutineScope = rememberCoroutineScope()
-
-    val pages = listOf(
-        OnboardingPage(
-            title = "ДОБРО ПОЖАЛОВАТЬ",
-            description = "Умная, великолепная и модная коллекция\nИзучите сейчас",
-            image = R.drawable.sneakers1
+fun SlideScreen(onNavigateToAuthScreen: () -> Unit) {
+    var sliderValue by remember { mutableStateOf(0) }
+    val slides = listOf(
+        SlideData(
+            imageRes = R.drawable.sneakers1,
+            title = "ДОБРО\nПОЖАЛОВАТЬ",
+            subtitle = ""
         ),
-        OnboardingPage(
-            title = "Начнем путешествие",
-            description = "В вашей комнате много красивых\nи привлекательных растений",
-            image = R.drawable.sneakers2
+        SlideData(
+            imageRes = R.drawable.sneakers2,
+            title = "Начнем\nпутешествие",
+            subtitle = "Умная, великолепная и модная\nколлекция Изучите сейчас"
         ),
-        OnboardingPage(
+        SlideData(
+            imageRes = R.drawable.sneakers3,
             title = "У Вас Есть Сила,\nЧтобы",
-            description = "Создать свой уникальный стиль",
-            image = R.drawable.sneakers3
+            subtitle = "В вашей комнате много красивых и\nпривлекательных растений"
         )
     )
+
+    val maxIndex = slides.size - 1
+    val currentSlide = slides[sliderValue]
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(listOf(Color(0xFF48B2E7), Color(0xFF0076B1)))
-            )
-    ) {
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.weight(1f)
-        ) { page ->
-            Box(modifier = Modifier.fillMaxSize()) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 32.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = pages[page].image),
-                        contentDescription = null,
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                            .height(400.dp)
-                            .padding(bottom = 40.dp)
-                    )
+            .background(Brush.horizontalGradient(listOf(Color(0xFF48B2E7), Color(0xFF0076B1)))),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(40.dp))
 
+                Text(
+                    text = currentSlide.title,
+                    color = Color.White,
+                    fontStyle = FontStyle.Italic,
+                    fontSize = 38.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 42.sp,
+                    overflow = TextOverflow.Clip,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                )
+
+                Image(
+                    painter = painterResource(id = currentSlide.imageRes),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(450.dp)
+                        .padding(vertical = 20.dp)
+                )
+
+                if (currentSlide.subtitle.isNotEmpty()) {
                     Text(
-                        text = pages[page].title,
+                        text = currentSlide.subtitle,
                         color = Color.White,
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontStyle = FontStyle.Italic,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Light,
                         textAlign = TextAlign.Center,
-                        lineHeight = 40.sp,
-                        modifier = Modifier.padding(horizontal = 24.dp)
-                    )
-
-                    Text(
-                        text = pages[page].description,
-                        color = Color.White.copy(alpha = 0.9f),
-                        fontSize = 20.sp,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 28.sp,
+                        lineHeight = 20.sp,
+                        overflow = TextOverflow.Clip,
                         modifier = Modifier
-                            .padding(horizontal = 24.dp)
-                            .padding(top = 24.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
                     )
                 }
-            }
-        }
 
+                Spacer(modifier = Modifier.weight(1f))
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 32.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            repeat(pages.size) { index ->
-                val isSelected = pagerState.currentPage == index
+                SlideIndicator(currentIndex = sliderValue, maxIndex = maxIndex) {
+                    sliderValue = it
+                }
 
-                val width by animateDpAsState(
-                    targetValue = if (isSelected) 40.dp else 16.dp,
-                    label = "indicator_width"
-                )
-
-                val color by animateColorAsState(
-                    targetValue = if (isSelected) Color.White else Color.White.copy(alpha = 0.4f),
-                    label = "indicator_color"
-                )
-
-                Box(
+                Button(
+                    onClick = {
+                        if (sliderValue < maxIndex) sliderValue++
+                        else onNavigateToAuthScreen()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Black
+                    ),
                     modifier = Modifier
-                        .height(6.dp)
-                        .width(width)
-                        .background(
-                            color = color,
-                            shape = RoundedCornerShape(50)
-                        )
-                )
-
-                if (index != pages.lastIndex) {
-                    Spacer(modifier = Modifier.width(8.dp))
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 20.dp)
+                ) {
+                    Text(text = if (sliderValue < maxIndex) "Далее" else "Начать")
                 }
             }
-        }
+}
 
+@Composable
+fun SlideIndicator(currentIndex: Int, maxIndex: Int, onClick: (Int) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        for (i in 0..maxIndex) {
+            val animatedWidth by animateDpAsState(
+                targetValue = if (i == currentIndex) 40.dp else 20.dp,
+                label = "widthAnim"
+            )
+            val animatedColor by animateColorAsState(
+                targetValue = if (i == currentIndex) Color.White else Color.LightGray,
+                label = "colorAnim"
+            )
 
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        Button(
-            onClick = {
-                coroutineScope.launch {
-                    if (pagerState.currentPage < pages.lastIndex) {
-                        pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                    } else {
-                        dataStore.setOnboardingCompleted(true)
-                        onNavigateToAuthScreen()
-                    }
-                }
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.White,
-                contentColor = Color.Black
-            ),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 32.dp)
-                .height(60.dp)
-        ) {
-            Text(
-                text = when (pagerState.currentPage) {
-                    0 -> "Начать"
-                    1 -> "Далее"
-                    2 -> "Далее"
-                    else -> ""
-                },
-                fontSize = 15.sp
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 6.dp)
+                    .height(6.dp)
+                    .width(animatedWidth)
+                    .background(
+                        color = animatedColor,
+                        shape = RoundedCornerShape(50)
+                    )
+                    .clickable { onClick(i) }
             )
         }
-
-        Spacer(modifier = Modifier.height(48.dp))
     }
 }
+
+data class SlideData(
+    val imageRes: Int,
+    val title: String,
+    val subtitle: String
+)

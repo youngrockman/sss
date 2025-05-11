@@ -18,9 +18,6 @@ interface AuthRemoteSource {
     @POST("/authorization")
     suspend fun authorization(@Body authorizationRequest: AuthRequest): AuthResponse
 
-    @GET("/allSneakers")
-    suspend fun popular(): List<SneakersResponse>
-
     @GET("/sneakers/popular")
     suspend fun getPopularSneakers(): List<SneakersResponse>
 
