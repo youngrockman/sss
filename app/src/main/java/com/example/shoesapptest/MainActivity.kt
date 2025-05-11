@@ -1,18 +1,17 @@
 package com.example.shoesapptest
 
-
 import android.annotation.SuppressLint
+import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.bundle.Bundle
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.compose.runtime.*
+import androidx.navigation.compose.*
 import com.example.pypypy.ui.screen.home.HomeScreenHast
 import com.example.shoesapp.ui.screen.SignInScreen
 import com.example.shoesapp.ui.theme.MatuleTheme
+import com.example.shoesapptest.data.local.DataStore
+import com.example.shoesapptest.screen.*
 import com.example.shoesapptest.screen.FavoriteScreen.FavoriteScreen
 import com.example.shoesapptest.screen.ForgotScreen.ForgotPassScreen
 import com.example.shoesapptest.screen.ListingScreen.OutdoorScreen
@@ -21,7 +20,8 @@ import com.example.shoesapptest.screen.PopularScreen.PopularScreen
 import com.example.shoesapptest.screen.RegistrationScreen.RegisterAccountScreen
 import com.example.shoesapptest.screen.SlideScreen.SlideScreen
 import com.example.shoesapptest.screen.SlideScreen.TitleScreen
-
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 
 sealed class Screen(val route: String) {
     object TitleScreen : Screen("title")
@@ -36,25 +36,33 @@ sealed class Screen(val route: String) {
     object OTPVerification : Screen("otp_verification")
 }
 
-
 class MainActivity : ComponentActivity() {
+
     @SuppressLint("ComposableDestinationInComposeScope")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-
+        val dataStore = DataStore(applicationContext)
 
         setContent {
             MatuleTheme {
                 val navController = rememberNavController()
 
 
+                val token by produceState(initialValue = "") {
+                    value = runBlocking { dataStore.tokenFlow.first() }
+                }
 
+                val startDestination = if (token.isNotBlank()) {
+                    Screen.Home.route
+                } else {
+                    Screen.SignInScreen.route
+                }
 
                 NavHost(
                     navController = navController,
-                    startDestination = Screen.TitleScreen.route
+                    startDestination = startDestination
                 ) {
                     composable(Screen.TitleScreen.route) {
                         TitleScreen {
@@ -88,8 +96,6 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-
-
                     composable(Screen.ForgotPasswordScereem.route) {
                         ForgotPassScreen(
                             onNavigateToSignInScreen = { navController.popBackStack() },
@@ -109,7 +115,6 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-
                     composable(Screen.Home.route) {
                         HomeScreenHast(navController)
                     }
@@ -121,11 +126,10 @@ class MainActivity : ComponentActivity() {
                     composable(Screen.Favorite.route) {
                         FavoriteScreen(navController)
                     }
+
                     composable(Screen.Outdoor.route) {
                         OutdoorScreen(navController)
-
                     }
-
                 }
             }
         }
